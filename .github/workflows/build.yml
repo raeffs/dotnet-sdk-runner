@@ -1,0 +1,64 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  # Weekly, so the unpinned apt packages in the final layer pick up Ubuntu
+  # security updates even when no FROM line moved.
+  schedule:
+    - cron: '17 4 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-image
+  cancel-in-progress: false
+
+env:
+  IMAGE: ghcr.io/raeffs/dotnet-sdk-runner
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Read the bundled versions
+        shell: bash
+        run: bash versions.sh >> "$GITHUB_ENV"
+
+      - name: Compute the tag
+        shell: bash
+        run: echo "TAG=${SDK_VERSION}-node${NODE_MAJOR}-${GITHUB_RUN_NUMBER}" >> "$GITHUB_ENV"
+
+      - name: Build
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "building ${IMAGE}:${TAG}"
+          docker build -t "${IMAGE}:${TAG}" .
+
+      - name: Smoke test
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm -v "${PWD}/smoke.sh:/smoke.sh:ro" "${IMAGE}:${TAG}" \
+            bash /smoke.sh "${SDK_VERSION}" "${NODE_MAJOR}"
+
+      - name: Log in to GHCR
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "${{ github.token }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Push
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker push "${IMAGE}:${TAG}"
+          echo "pushed ${IMAGE}:${TAG}" >> "$GITHUB_STEP_SUMMARY"

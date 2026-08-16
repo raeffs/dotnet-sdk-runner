@@ -1,0 +1,26 @@
+name: validate
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: docker
+    container: ghcr.io/renovatebot/renovate:43
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Validate the Renovate config
+        run: renovate-config-validator --strict renovate.json
+
+      - name: versions.sh reads both FROM lines
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash versions.sh
+          eval "$(bash versions.sh)"
+          test -n "${SDK_VERSION}"
+          test -n "${NODE_MAJOR}"
