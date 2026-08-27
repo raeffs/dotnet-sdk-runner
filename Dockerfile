@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM node:24.19.0-bookworm-slim AS node
+FROM node:24.20.0-bookworm-slim AS node
 FROM mcr.microsoft.com/dotnet/sdk:10.0.400-noble-aot
 
 COPY --from=node /usr/local/bin/node /usr/local/bin/node
