@@ -1,4 +1,13 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["local>renovate-bot/renovate-config"]
+  "extends": ["local>renovate-bot/renovate-config"],
+  "packageRules": [
+    {
+      "description": "Each Dockerfile stage sdk<major> holds one .NET SDK major. A new major is a new stage that a person adds, so Renovate must never move a stage to the next major",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": ["mcr.microsoft.com/dotnet/sdk"],
+      "matchUpdateTypes": ["major"],
+      "enabled": false
+    }
+  ]
 }
