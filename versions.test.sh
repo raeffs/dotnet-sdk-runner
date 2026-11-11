@@ -67,6 +67,15 @@ expect_failure no_stage "$(fixture none "$node_line")"
 expect_failure missed_stage_line_fails "$(fixture missed "$node_line" "$sdk10_line" \
   'FROM mcr.microsoft.com/dotnet/sdk:11.0.100-resolute-aot as sdk11')"
 
+expect_failure lowercase_from_fails "$(fixture lowerfrom "$node_line" "$sdk10_line" \
+  'from mcr.microsoft.com/dotnet/sdk:11.0.100-resolute-aot AS sdk11')"
+
+expect_failure indented_stage_line_fails "$(fixture indented "$node_line" "$sdk10_line" \
+  '  FROM mcr.microsoft.com/dotnet/sdk:11.0.100-resolute-aot AS sdk11')"
+
+expect_failure platform_flag_fails "$(fixture platform "$node_line" "$sdk10_line" \
+  'FROM --platform=linux/amd64 mcr.microsoft.com/dotnet/sdk:11.0.100-resolute-aot AS sdk11')"
+
 expect_failure stage_major_mismatch_fails "$(fixture mismatch "$node_line" \
   'FROM mcr.microsoft.com/dotnet/sdk:11.0.100-noble-aot AS sdk10')"
 

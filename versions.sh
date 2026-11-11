@@ -15,7 +15,7 @@ set -euo pipefail
 
 dockerfile="${1:-Dockerfile}"
 
-from_lines="$(grep -c '^FROM mcr\.microsoft\.com/dotnet/sdk:' "$dockerfile" || true)"
+from_lines="$(grep -ciE '^[[:space:]]*FROM[[:space:]].*mcr\.microsoft\.com/dotnet/sdk:' "$dockerfile" || true)"
 stages="$(sed -n 's|^FROM mcr\.microsoft\.com/dotnet/sdk:\([0-9][0-9]*\)\(\.[0-9][0-9]*\.[0-9][0-9]*\)-[^ ]* AS sdk\([0-9][0-9]*\)$|\3 \1 \1\2|p' "$dockerfile")"
 node_major="$(sed -n 's|^FROM node:\([0-9][0-9]*\)\..*AS node.*|\1|p' "$dockerfile")"
 
