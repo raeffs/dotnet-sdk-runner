@@ -20,17 +20,36 @@ env:
   IMAGE: ghcr.io/raeffs/dotnet-sdk-runner
 
 jobs:
+  variants:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.versions.outputs.SDK_MATRIX }}
+      node_major: ${{ steps.versions.outputs.NODE_MAJOR }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Read the image variants
+        id: versions
+        shell: bash
+        run: bash versions.sh >> "$GITHUB_OUTPUT"
+
   build:
+    needs: variants
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: ${{ fromJSON(needs.variants.outputs.matrix) }}
+    name: build (${{ matrix.variant.stage }})
+    env:
+      SDK_STAGE: ${{ matrix.variant.stage }}
+      SDK_VERSION: ${{ matrix.variant.sdk }}
+      NODE_MAJOR: ${{ needs.variants.outputs.node_major }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-
-      - name: Read the bundled versions
-        shell: bash
-        run: bash versions.sh >> "$GITHUB_ENV"
 
       - name: Compute the tag
         shell: bash
@@ -41,7 +60,7 @@ jobs:
         run: |
           set -euo pipefail
           echo "building ${IMAGE}:${TAG}"
-          docker build -t "${IMAGE}:${TAG}" .
+          docker build --build-arg "SDK=${SDK_STAGE}" -t "${IMAGE}:${TAG}" .
 
       - name: Smoke test
         shell: bash

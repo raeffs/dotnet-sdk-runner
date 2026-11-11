@@ -16,11 +16,6 @@ jobs:
       - name: Validate the Renovate config
         run: renovate-config-validator --strict renovate.json versioning.json
 
-      - name: versions.sh reads both FROM lines
+      - name: versions.sh
         shell: bash
-        run: |
-          set -euo pipefail
-          bash versions.sh
-          eval "$(bash versions.sh)"
-          test -n "${SDK_VERSION}"
-          test -n "${NODE_MAJOR}"
+        run: bash versions.test.sh
