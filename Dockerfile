@@ -5,6 +5,7 @@ ARG SDK
 
 FROM node:26.13.0-bookworm-slim AS node
 FROM mcr.microsoft.com/dotnet/sdk:10.0.404-noble-aot AS sdk10
+FROM mcr.microsoft.com/dotnet/sdk:11.0.100-resolute-aot AS sdk11
 
 FROM ${SDK}
 

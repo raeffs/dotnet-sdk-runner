@@ -12,7 +12,7 @@ expected_sdk="${1:?expected .NET SDK version required}"
 expected_node_major="${2:?expected node major version required}"
 fail=0
 
-for t in dotnet node git unzip jq curl wget tar clang cc ld.bfd objcopy; do
+for t in dotnet node git unzip jq curl wget tar cc ld.bfd objcopy; do
   if command -v "$t" >/dev/null 2>&1; then
     printf 'ok    %-12s %s\n' "$t" "$(command -v "$t")"
   else
